@@ -56,13 +56,33 @@ Open-source projekt bankowy z passwordless auth (email + passkeys). Backend auth
 
 **`GET /authentication/initiate`**
 - Brak parametrow (opiera sie na session cookie)
-- 200: Zwraca `loginOptions` do `navigator.credentials.get()`
+- 200: Zwraca `loginOptions` + `sessionId`
+  ```json
+  {
+    "loginOptions": {
+      "challenge": "string",
+      "timeout": 0,
+      "rpId": "string",
+      "allowCredentials": [{ "type": "string", "id": "string", "transports": ["usb"] }],
+      "userVerification": "required",
+      "extensions": {}
+    },
+    "sessionId": "a1b2c3d4-e5f6-7890-1234-567890abcdef"
+  }
+  ```
 - 401: Uzytkownik nierozpoznany / brak aktywnej sesji
 
 **`POST /authentication/complete`**
-- Request: credential JSON z `navigator.credentials.get()`
+- Request:
+  ```json
+  {
+    "sessionId": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+    "AuthenticationResponseJSON": "string",
+    "credentialId": "01020304-0506-0708-090a-0b0c0d0e0f10"
+  }
+  ```
 - 200: Sukces, zwraca `{ "accessToken": "string", "refreshToken": "string" }`
-- 400: Nieprawidlowe dane
+- 400: Brakujace wymagane pola lub nieprawidlowy format
 - 401: Nieprawidlowy podpis, wygasla sesja, challenge mismatch
 
 ### User Registration
@@ -72,7 +92,13 @@ Open-source projekt bankowy z passwordless auth (email + passkeys). Backend auth
 | `/registration/complete` | POST | Rejestracja nowego usera z passkey. Zwraca tokeny. |
 
 **`POST /registration/complete`**
-- Request: credential JSON z `navigator.credentials.create()` + `registrationResponseJSON`
+- Request:
+  ```json
+  {
+    "sessionId": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+    "RegistrationResponseJSON": "string"
+  }
+  ```
 - 200: Konto utworzone, zwraca `{ "accessToken": "string", "refreshToken": "string" }`
 - 400: Nieprawidlowa sesja, bledny request, lub weryfikacja passkey nieudana
 
